@@ -17,6 +17,7 @@ func main() {
 		kgo.SeedBrokers(config.GetBrokers()...),
 		kgo.ConsumeTopics(config.GetTopics()...),
 		kgo.DefaultProduceTopic(config.GetDefaultProducerTopic()),
+		kgo.ConsumerGroup(config.GetConsumerGroup()),
 	)
 
 	if err != nil {

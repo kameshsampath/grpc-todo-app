@@ -11,6 +11,10 @@ func GetEnv() string {
 	return getEnvironmentValue("ENV")
 }
 
+func GetConsumerGroup() string {
+	return getEnvironmentValue("CONSUMER_GROUP_ID")
+}
+
 func GetPort() int {
 	port, _ := strconv.Atoi(getEnvironmentValue("PORT"))
 	return port
