@@ -134,6 +134,10 @@ grpcurl -plaintext -d @ "localhost:$PORT" todo.Todo/UpdateTodo <<EOM
 EOM
 ```
 
+## References
+
+The demo uses the [protobuf](https://protobuf.dev) definitions from <https://github.com/kameshsampath/demo-protos>
+
 ## Cleanup
 
 ```shell
