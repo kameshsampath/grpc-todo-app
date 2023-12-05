@@ -1,0 +1,99 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 1
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/server
+    id: "server"
+    binary: server
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - "amd64"
+      - "arm64"
+    env:
+      - CGO_ENABLED=0
+  - main: ./cmd/client
+    id: "client"
+    binary: client
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - "amd64"
+      - "arm64"
+    env:
+      - CGO_ENABLED=0
+
+kos:
+  - id: todo-app-server
+    build: server
+    main: ./cmd/server
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    repository: ghcr.io/kameshsampath/grpc-todo-app
+    labels:
+      org.opencontainers.image.source: https://github.com/kameshsampath/grpc-todo-app
+    tags:
+      - latest
+      - "{{.Tag}}"
+      - "{{if not .Prerelease}}stable{{end}}"
+    creation_time: "{{.CommitTimestamp}}"
+    ko_data_creation_time: "{{.CommitTimestamp}}"
+    bare: true
+    preserve_import_paths: true
+    base_import_paths: true
+  - id: todo-list
+    build: client
+    main: ./cmd/client
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    repository: ghcr.io/kameshsampath/grpc-todo-app
+    labels:
+      org.opencontainers.image.source: https://github.com/kameshsampath/grpc-todo-app
+    tags:
+      - latest
+      - "{{.Tag}}"
+      - "{{if not .Prerelease}}stable{{end}}"
+    creation_time: "{{.CommitTimestamp}}"
+    ko_data_creation_time: "{{.CommitTimestamp}}"
+    bare: true
+    preserve_import_paths: true
+    base_import_paths: true
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
