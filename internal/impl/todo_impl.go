@@ -1,4 +1,4 @@
-package grpc
+package impl
 
 import (
 	"context"
@@ -25,30 +25,30 @@ func init() {
 }
 
 // AddTodo implements todo.TodoServer.
-func (a *Adapter) AddTodo(ctx context.Context, req *todo.TodoAddRequest) (*todo.TodoResponse, error) {
+func (s *Server) AddTodo(ctx context.Context, req *todo.TodoAddRequest) (*todo.TodoResponse, error) {
 	task := &todo.Task{
 		Title:       req.Task.Title,
 		Description: req.Task.Description,
 		Completed:   req.Task.Completed,
 	}
-	return marshallAndSend(ctx, a.client, task)
+	return marshallAndSend(ctx, s.client, task)
 }
 
 // UpdateTodo implements todo.TodoServer.
-func (a *Adapter) UpdateTodo(ctx context.Context, req *todo.UpdateTodoStatusRequest) (*todo.TodoResponse, error) {
+func (s *Server) UpdateTodo(ctx context.Context, req *todo.UpdateTodoStatusRequest) (*todo.TodoResponse, error) {
 	task := &todo.Task{
 		Title:       req.Task.Title,
 		Description: req.Task.Description,
 		Completed:   req.Task.Completed,
 	}
-	return marshallAndSend(ctx, a.client, task)
+	return marshallAndSend(ctx, s.client, task)
 }
 
 // TodoList implements todo.TodoServer.
-func (a *Adapter) TodoList(empty *emptypb.Empty, stream todo.Todo_TodoListServer) error {
+func (s *Server) TodoList(empty *emptypb.Empty, stream todo.Todo_TodoListServer) error {
 	ch := make(chan result)
 	go func() {
-		poll(a.client, ch)
+		poll(s.client, ch)
 	}()
 
 	for {
@@ -127,4 +127,4 @@ func poll(client *kgo.Client, ch chan result) {
 	}
 }
 
-var _ todo.TodoServer = (*Adapter)(nil)
+var _ todo.TodoServer = (*Server)(nil)

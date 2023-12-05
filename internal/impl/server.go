@@ -1,34 +1,36 @@
-package grpc
+package impl
 
 import (
 	"fmt"
 	"net"
 
 	"github.com/kameshsampath/demo-protos/golang/todo"
-	"github.com/kameshsampath/todo-app/config"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-func (a *Adapter) Run() error {
+// Run runs the gRPC server
+func (s *Server) Run() error {
 	logger, _ := zap.NewDevelopment()
 	defer logger.Sync()
 	log := logger.Sugar()
-	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
+
+	config := s.config
+	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Port))
 	if err != nil {
-		return fmt.Errorf("error starting server with port %d,%v", a.port, err)
+		return fmt.Errorf("error starting server with port %d,%v", config.Port, err)
 	}
 	server := grpc.NewServer()
-	todo.RegisterTodoServer(server, a)
+	todo.RegisterTodoServer(server, s)
+	log.Infof("Server started on port %d", config.Port)
 	// required for grpcurl
-	if config.GetEnv() == "dev" {
+	if config.Env == "dev" {
 		reflection.Register(server)
 	}
+
 	if err := server.Serve(listen); err != nil {
 		return fmt.Errorf("error starting server,%v", err)
 	}
-	log.Infof("Server started on port %d", a.port)
-
 	return nil
 }

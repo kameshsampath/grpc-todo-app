@@ -1,42 +1,37 @@
 package config
 
 import (
-	"log"
-	"os"
-	"strconv"
-	"strings"
+	"github.com/caarlos0/env/v10"
+	"go.uber.org/zap"
 )
 
-func GetEnv() string {
-	return getEnvironmentValue("ENV")
+// Config sets the configuration for the gRPC service
+type Config struct {
+	Env             string   `env:"ENV" envDefault:"dev"`
+	ConsumerGroupID string   `env:"CONSUMER_GROUP_ID"`
+	Port            uint16   `env:"PORT" envDefault:"9090"`
+	Seeds           []string `env:"BROKERS" envSeparator:","`
+	Topics          []string `env:"TOPICS" envSeparator:","`
 }
 
-func GetConsumerGroup() string {
-	return getEnvironmentValue("CONSUMER_GROUP_ID")
+var log *zap.SugaredLogger
+
+func init() {
+	logger, _ := zap.NewDevelopment()
+	defer logger.Sync()
+	log = logger.Sugar()
 }
 
-func GetPort() int {
-	port, _ := strconv.Atoi(getEnvironmentValue("PORT"))
-	return port
-}
+func New() *Config {
+	var config = new(Config)
 
-func GetBrokers() []string {
-	brokers := getEnvironmentValue("BROKERS")
-	return strings.Split(brokers, ",")
-}
-
-func GetTopics() []string {
-	topics := getEnvironmentValue("TOPICS")
-	return strings.Split(topics, ",")
-}
-
-func GetDefaultProducerTopic() string {
-	return GetTopics()[0]
-}
-
-func getEnvironmentValue(key string) string {
-	if os.Getenv(key) == "" {
-		log.Fatalf("%s environment variable is missing.", key)
+	if err := env.Parse(config); err != nil {
+		log.Fatalf("error parsing config, %v", err)
 	}
-	return os.Getenv(key)
+
+	return config
+}
+
+func (c *Config) DefaultProducerTopic() string {
+	return c.Topics[0]
 }

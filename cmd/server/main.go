@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/kameshsampath/todo-app/config"
-	"github.com/kameshsampath/todo-app/internal/adapters/grpc"
+	"github.com/kameshsampath/todo-app/internal/impl"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"go.uber.org/zap"
 )
@@ -13,19 +13,21 @@ func main() {
 	defer logger.Sync()
 	log := logger.Sugar()
 
+	config := config.New()
+
 	client, err := kgo.NewClient(
-		kgo.SeedBrokers(config.GetBrokers()...),
-		kgo.ConsumeTopics(config.GetTopics()...),
-		kgo.DefaultProduceTopic(config.GetDefaultProducerTopic()),
-		kgo.ConsumerGroup(config.GetConsumerGroup()),
+		kgo.SeedBrokers(config.Seeds...),
+		kgo.ConsumeTopics(config.Topics...),
+		kgo.DefaultProduceTopic(config.DefaultProducerTopic()),
+		kgo.ConsumerGroup(config.ConsumerGroupID),
 	)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	adapter := grpc.NewAdapter(client, config.GetPort())
-	if err := adapter.Run(); err != nil {
+	server := impl.New(client, config)
+	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
