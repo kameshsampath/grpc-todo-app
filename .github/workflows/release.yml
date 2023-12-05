@@ -6,6 +6,7 @@ on:
     # run only against tags
     tags:
       - "*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -31,5 +32,5 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_GH_ACTION_TOKEN }}
           KO_DOCKER_REPO: ghcr.io/kameshsampath/grpc-todo-app
