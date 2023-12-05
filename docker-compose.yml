@@ -71,3 +71,18 @@ services:
       - 8080:8080
     depends_on:
       - redpanda-0
+  todo-app:
+    container_name: todo-app-server
+    image: ghcr.io/kameshsampath/grpc-todo-app/server:v0.0.1
+    networks:
+      - redpanda_network
+    environment:
+      - PORT=9090
+      - BROKERS=redpanda-0:19092
+      - TOPICS=todo-list
+      - ENV=dev
+      - CONSUMER_GROUP_ID=grpc-todo-app
+    ports:
+      - 9090:9090
+    depends_on:
+      - redpanda-0

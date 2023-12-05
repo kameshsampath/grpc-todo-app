@@ -54,8 +54,7 @@ kos:
       - "{{if not .Prerelease}}stable{{end}}"
     creation_time: "{{.CommitTimestamp}}"
     ko_data_creation_time: "{{.CommitTimestamp}}"
-    bare: true
-    preserve_import_paths: true
+    preserve_import_paths: false
     base_import_paths: true
   - id: todo-list
     build: client
@@ -72,8 +71,7 @@ kos:
       - "{{if not .Prerelease}}stable{{end}}"
     creation_time: "{{.CommitTimestamp}}"
     ko_data_creation_time: "{{.CommitTimestamp}}"
-    bare: true
-    preserve_import_paths: true
+    preserve_import_paths: false
     base_import_paths: true
 
 archives:
