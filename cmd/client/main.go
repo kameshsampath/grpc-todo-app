@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"io"
+	"os"
 	"time"
 
 	"github.com/kameshsampath/demo-protos/golang/todo"
@@ -19,7 +20,7 @@ func main() {
 	defer logger.Sync()
 	log := logger.Sugar()
 
-	conn, err := grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(os.Getenv("SERVICE_ADDRESS"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		log.Fatal(err)
