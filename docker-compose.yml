@@ -73,7 +73,7 @@ services:
       - redpanda-0
   todo-app:
     container_name: todo-app-server
-    image: ghcr.io/kameshsampath/grpc-todo-app/server:v0.0.1
+    image: ghcr.io/kameshsampath/grpc-todo-app/server:v0.0.3
     networks:
       - redpanda_network
     environment:
@@ -86,3 +86,12 @@ services:
       - 9090:9090
     depends_on:
       - redpanda-0
+  todo-list:
+    container_name: todo-list
+    image: ghcr.io/kameshsampath/grpc-todo-app/client:v0.0.3
+    networks:
+      - redpanda_network
+    environment:
+      - SERVICE_ADDRESS=todo-app-server:9090
+    depends_on:
+      - todo-app

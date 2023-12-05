@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  # TODO check why enabling this not able to push the image to ghcr.io
   packages: write
   # issues: write
 
