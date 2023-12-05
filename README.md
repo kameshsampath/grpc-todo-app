@@ -9,49 +9,53 @@ To run the demo you need the following tools on your local machine,
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Redpanda CLI](https://docs.redpanda.com/current/get-started/rpk/)
 - [gRPC cURL](https://github.com/fullstorydev/grpcurl)
-- [Go](https://go.dev)
 
 ## Data Streaming Platform Setup
 
-### Start Redpanda Server
+The entire demo is containerized and all the applications could be started using the Docker compose,
 
 ```shell
 docker compose up -d
 ```
 
-**IMPORTANT**:
+The docker compose starts the following services,
 
-> Wait for the containers to be running. You can use `rpk cluster status` to check the status.
+- `redpanda-0` - A single node Redpanda server
+- `console` - The Redpanda console
+- `todo-app-server` - The Todo Application gRPC server
+- `todo-list` - The Todo Application client that receives the streaming messages from the gRPC `todo-app-server`
+
+The `Todo` application runs with the following environment variables, please change them as needed if you deploy without defaults.
+
+### Todo gRPC Server
+
+```shell
+# gRPC service port
+PORT=9090
+# Redpanda Brokers
+BROKERS=redpanda-0:9092
+# Topic to store the Todo
+TOPICS=todo-list
+# Running environment, typically used for grpcurl
+ENV=dev
+# The consumer group used while consuming messages
+CONSUMER_GROUP_ID=grpc-todo-app
+```
+
+### Todo gRPC Client (Todo List)
+
+```shell
+SERVICE_ADDRESS=todo-app-server:9090
+```
+
+**NOTE**:
+
+> The individual application binaries for Todo App gRPC Server and Todo App Client are available on the [application repo](https://github.com/kameshsampath/grpc-todo-app/releases). You can download them and run the application individually.
 
 ### Create todo-list topic
 
 ```shell
 rpk topic create todo-list
-```
-
-## Start Todo Application Server
-
-Open your Terminal and export the following variables,
-
-```shell
-export RPK_BROKERS="127.0.0.1:19092"
-# comma separated list of Kafka brokers
-export BROKERS="$RPK_BROKERS"
-# comma separated list of topics, first topic in the list is default
-# producer topic
-export TOPICS=todo-list
-# allows detailed logging
-export ENV=dev
-# the port where gRPC Todo app server will be running
-export PORT=9090
-# The Consumer Group ID
-export CONSUMER_GROUP_ID=grpc-todo-app
-```
-
-Start the gRPC server,
-
-```shell
-go run cmd/server/main.go
 ```
 
 ## Interact With Todo Service
@@ -84,12 +88,19 @@ todo.Todo.TodoList
 todo.Todo.UpdateTodo
 ```
 
-### Start the Streaming Consumer
+### View List of Todo
 
-On a new terminal start the streaming consumer that polls the message on the `todo-list` topic and prints on the console,
+On a new terminal run the following command to view the list of Todos added by earlier steps,
 
 ```shell
-go run cmd/client/main.go
+docker compose logs -f todo-list
+```
+
+The output should be something like,
+
+```shell
+todo-list  | 2023-12-05T05:20:19.235Z   INFO    client/main.go:44       Task    {"Title": "Finish gRPC Demo README", "Description": "Complete the README update of the gRPC Data Streaming Demo App.", "Completed": false, "Last Updated": "Thursday, 01-Jan-70 00:00:00 UTC", "Partition": 0, "Offset": 0}
+todo-list  | 2023-12-05T05:20:19.236Z   INFO    client/main.go:44       Task    {"Title": "Finish gRPC Demo README", "Description": "Complete the README update of the gRPC Data Streaming Demo App.", "Completed": false, "Last Updated": "Thursday, 01-Jan-70 00:00:00 UTC", "Partition": 0, "Offset": 1}
 ```
 
 **TIP**:
@@ -114,10 +125,17 @@ grpcurl -plaintext -d @ "localhost:$PORT" todo.Todo/AddTodo <<EOM
 EOM
 ```
 
-Once the task is added the terminal running the client should show the following output,
+Once the task is added the terminal running the client should show an output similar to,
 
-```text
-2023-12-04T21:29:15.823+0530    INFO    client/main.go:43       Task    {"Title": "Finish gRPC Demo README", "Description": "Complete the README update of the gRPC Data Streaming Demo App.", "Completed": false, "Last Updated": "Thursday, 01-Jan-70 00:00:00 UTC", "Partition": 0, "Offset": 1}
+```json
+{
+  "Title": "Finish gRPC Demo README",
+  "Description": "Complete the README update of the gRPC Data Streaming Demo App.",
+  "Completed": false,
+  "Last Updated": "Thursday, 01-Jan-70 00:00:00 UTC",
+  "Partition": 0,
+  "Offset": 1
+}
 ```
 
 ### Update Todo
@@ -143,5 +161,3 @@ The demo uses the [protobuf](https://protobuf.dev) definitions from <https://git
 ```shell
 docker compose down
 ```
-
-Stop the gRPC server and client by hitting `CTRL + C`
