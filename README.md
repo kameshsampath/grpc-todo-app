@@ -25,7 +25,7 @@ The docker compose starts the following services,
 - `todo-app-server` - The Todo Application gRPC server
 - `todo-list` - The Todo Application client that receives the streaming messages from the gRPC `todo-app-server`
 
-The `Todo` application runs with the following environment variables, please change them as needed if you deploy without defaults.
+The `Todo` application runs with the following environment variables defaults, please change them as needed if you deploy without these defaults.
 
 ### Todo gRPC Server
 
@@ -51,12 +51,6 @@ SERVICE_ADDRESS=todo-app-server:9090
 **NOTE**:
 
 > The individual application binaries for Todo App gRPC Server and Todo App Client are available on the [application repo](https://github.com/kameshsampath/grpc-todo-app/releases). You can download them and run the application individually.
-
-### Create todo-list topic
-
-```shell
-rpk topic create todo-list
-```
 
 ## Interact With Todo Service
 
@@ -85,7 +79,6 @@ It should return the following methods,
 ```text
 todo.Todo.AddTodo
 todo.Todo.TodoList
-todo.Todo.UpdateTodo
 ```
 
 ### View List of Todo
@@ -136,20 +129,6 @@ Once the task is added the terminal running the client should show an output sim
   "Partition": 0,
   "Offset": 1
 }
-```
-
-### Update Todo
-
-```shell
-grpcurl -plaintext -d @ "localhost:$PORT" todo.Todo/UpdateTodo <<EOM
-{
-  "task": {
-    "title": "Finish gRPC Demo README",
-    "description": "Complete the README update of the gRPC Data Streaming Demo App.",
-    "completed": true
-  }
-}
-EOM
 ```
 
 ## References

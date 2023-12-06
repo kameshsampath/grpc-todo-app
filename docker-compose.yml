@@ -73,7 +73,7 @@ services:
       - redpanda-0
   todo-app:
     container_name: todo-app-server
-    image: ghcr.io/kameshsampath/grpc-todo-app/server:v0.0.4
+    image: ghcr.io/kameshsampath/grpc-todo-app/server:v0.0.5
     networks:
       - redpanda_network
     environment:
@@ -90,7 +90,7 @@ services:
       - redpanda-0
   todo-list:
     container_name: todo-list
-    image: ghcr.io/kameshsampath/grpc-todo-app/client:v0.0.4
+    image: ghcr.io/kameshsampath/grpc-todo-app/client:v0.0.5
     networks:
       - redpanda_network
     links:
