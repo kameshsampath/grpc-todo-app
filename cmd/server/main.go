@@ -20,6 +20,7 @@ func main() {
 		kgo.ConsumeTopics(config.Topics...),
 		kgo.DefaultProduceTopic(config.DefaultProducerTopic()),
 		kgo.ConsumerGroup(config.ConsumerGroupID),
+		kgo.AllowAutoTopicCreation(),
 	)
 
 	if err != nil {

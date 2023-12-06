@@ -8,8 +8,8 @@ github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiu
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
 github.com/google/go-cmp v0.5.9/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
-github.com/kameshsampath/demo-protos/golang/todo v0.0.0-20231204144625-d1bdccfdd066 h1:+w2gew3Vnb/jqt27hi4LceCrw1L5EMDTs8qRV/eBZkU=
-github.com/kameshsampath/demo-protos/golang/todo v0.0.0-20231204144625-d1bdccfdd066/go.mod h1:TrV0a8JgZQi15yOxOJu7bb/tUWJTsH+lRx43avhu7vg=
+github.com/kameshsampath/demo-protos/golang/todo v0.0.0-20231206022715-1afc44aab8bf h1:N1GHZei2VLPorTbjQT7BoPlAOH3SVdEvaLi48WoISAo=
+github.com/kameshsampath/demo-protos/golang/todo v0.0.0-20231206022715-1afc44aab8bf/go.mod h1:xzsq1AM6feGclH2bbMUEH6volbpJbUKPya/4mWht3Kk=
 github.com/klauspost/compress v1.16.7 h1:2mk3MPGNzKyxErAw8YaohYh69+pa4sIQSC0fPGCFR9I=
 github.com/klauspost/compress v1.16.7/go.mod h1:ntbaceVETuRiXiv4DpjP66DpAtAGkEQskQzEyD//IeE=
 github.com/pierrec/lz4/v4 v4.1.18 h1:xaKrnTkyoqfh1YItXl56+6KJNVYWlEEPuAQW9xsplYQ=

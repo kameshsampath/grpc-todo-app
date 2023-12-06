@@ -4,7 +4,7 @@ go 1.21.2
 
 require (
 	github.com/caarlos0/env/v10 v10.0.0
-	github.com/kameshsampath/demo-protos/golang/todo v0.0.0-20231204144625-d1bdccfdd066
+	github.com/kameshsampath/demo-protos/golang/todo v0.0.0-20231206022715-1afc44aab8bf
 	github.com/twmb/franz-go v1.15.2
 	go.uber.org/zap v1.26.0
 	google.golang.org/grpc v1.59.0
