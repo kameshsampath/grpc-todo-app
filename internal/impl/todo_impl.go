@@ -34,16 +34,6 @@ func (s *Server) AddTodo(ctx context.Context, req *todo.TodoAddRequest) (*todo.T
 	return marshallAndSend(ctx, s.client, task)
 }
 
-// UpdateTodo implements todo.TodoServer.
-func (s *Server) UpdateTodo(ctx context.Context, req *todo.UpdateTodoStatusRequest) (*todo.TodoResponse, error) {
-	task := &todo.Task{
-		Title:       req.Task.Title,
-		Description: req.Task.Description,
-		Completed:   req.Task.Completed,
-	}
-	return marshallAndSend(ctx, s.client, task)
-}
-
 // TodoList implements todo.TodoServer.
 func (s *Server) TodoList(empty *emptypb.Empty, stream todo.Todo_TodoListServer) error {
 	ch := make(chan result)
@@ -56,26 +46,41 @@ func (s *Server) TodoList(empty *emptypb.Empty, stream todo.Todo_TodoListServer)
 		case r := <-ch:
 			{
 				if errs := r.errors; len(errs) > 0 {
-					log.Errorln("Errors")
-					//TODO send back errors
+					var errors = make([]*todo.Error, len(errs))
 					for _, err := range errs {
-						log.Errorw("Error Details",
+						log.Debugf("Error Details",
 							"Topic", err.Topic,
 							"Partition", err.Partition,
 							"Error", err.Err,
 						)
+						errors = append(errors, &todo.Error{
+							Topic:     err.Topic,
+							Partition: err.Partition,
+							Message:   err.Err.Error(),
+						})
 					}
+					stream.Send(&todo.TodoListResponse{
+						Response: &todo.TodoListResponse_Errors{Errors: &todo.Errors{
+							Error: errors,
+						}},
+					})
 				}
 				b := r.record.Value
 				task := new(todo.Task)
 				if err := proto.Unmarshal(b, task); err != nil {
-					//TODO send back errors
-					log.Error(err)
+					//Skip Sending invalid data, just log the error
+					log.Errorw("Error marshalling task",
+						"Data", string(b),
+						"Error", err.Error())
 				} else {
-					stream.Send(&todo.TodoResponse{
-						Task:      task,
-						Partition: r.record.Partition,
-						Offset:    r.record.Offset,
+					stream.Send(&todo.TodoListResponse{
+						Response: &todo.TodoListResponse_Todo{
+							Todo: &todo.TodoResponse{
+								Task:      task,
+								Partition: r.record.Partition,
+								Offset:    r.record.Offset,
+							},
+						},
 					})
 				}
 			}
