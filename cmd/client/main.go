@@ -41,13 +41,26 @@ func main() {
 		if err != nil {
 			log.Fatalf("client.TodoList failed: %v", err)
 		}
-		log.Infow("Task",
-			"Title", tr.Task.Title,
-			"Description", tr.Task.Description,
-			"Completed", tr.Task.Completed,
-			"Last Updated", tr.Task.LastUpdated.AsTime().Format(time.RFC850),
-			"Partition", tr.Partition,
-			"Offset", tr.Offset,
-		)
+
+		if errs := tr.GetErrors(); errs != nil {
+			log.Errorln("Errors fetching:")
+			for _, e := range errs.Error {
+				log.Errorw("Error Details",
+					"Topic", e.Topic,
+					"Partition", e.Partition,
+					"Error", e.Message,
+				)
+			}
+		} else {
+			todo := tr.GetTodo()
+			log.Infow("Task",
+				"Title", todo.Task.Title,
+				"Description", todo.Task.Description,
+				"Completed", todo.Task.Completed,
+				"Last Updated", todo.Task.LastUpdated.AsTime().Format(time.RFC850),
+				"Partition", todo.Partition,
+				"Offset", todo.Offset,
+			)
+		}
 	}
 }
