@@ -45,7 +45,8 @@ services:
       - 19644:9644
   console:
     container_name: redpanda-console
-    image: docker.redpanda.com/redpandadata/console:v2.3.6
+    #image: docker.redpanda.com/redpandadata/console:v2.3.6
+    image: redpandadata/console-unstable:master-3ac807b
     networks:
       - redpanda_network
     entrypoint: /bin/sh
@@ -58,11 +59,21 @@ services:
           schemaRegistry:
             enabled: true
             urls: ["http://redpanda-0:8081"]
+            username: console
+            password: password
           protobuf:
             enabled: true
             schemaRegistry:
               enabled: true
               refreshInterval: 5m
+            mappings:
+              - topicName: todo-list
+                valueProtoType: todo.Task
+            git:
+              enabled: true
+              refreshInterval: 5m
+              repository:
+                 url: https://github.com/kameshsampath/demo-protos.git
         redpanda:
           adminApi:
             enabled: true
