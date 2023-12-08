@@ -14,8 +14,6 @@ import (
 )
 
 func main() {
-	//Jai Guru
-
 	logger, _ := zap.NewDevelopment()
 	defer logger.Sync()
 	log := logger.Sugar()

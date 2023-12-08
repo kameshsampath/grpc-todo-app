@@ -7,7 +7,6 @@ import (
 	"github.com/kameshsampath/demo-protos/golang/todo"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -26,19 +25,30 @@ func init() {
 
 // AddTodo implements todo.TodoServer.
 func (s *Server) AddTodo(ctx context.Context, req *todo.TodoAddRequest) (*todo.TodoResponse, error) {
-	task := &todo.Task{
-		Title:       req.Task.Title,
-		Description: req.Task.Description,
-		Completed:   req.Task.Completed,
+
+	tctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	r := &kgo.Record{
+		Key:   []byte(req.Task.Title),
+		Value: s.serde.MustEncode(req.Task),
 	}
-	return marshallAndSend(ctx, s.client, task)
+	if err := s.client.ProduceSync(tctx, r).FirstErr(); err != nil {
+		return nil, err
+	}
+
+	return &todo.TodoResponse{
+		Task:      req.Task,
+		Partition: r.Partition,
+		Offset:    r.Offset,
+	}, nil
 }
 
 // TodoList implements todo.TodoServer.
 func (s *Server) TodoList(empty *emptypb.Empty, stream todo.Todo_TodoListServer) error {
 	ch := make(chan result)
 	go func() {
-		poll(s.client, ch)
+		s.poll(ch)
 	}()
 
 	for {
@@ -67,9 +77,9 @@ func (s *Server) TodoList(empty *emptypb.Empty, stream todo.Todo_TodoListServer)
 				}
 				b := r.record.Value
 				task := new(todo.Task)
-				if err := proto.Unmarshal(b, task); err != nil {
+				if err := s.serde.Decode(b, task); err != nil {
 					//Skip Sending invalid data, just log the error
-					log.Errorw("Error marshalling task",
+					log.Errorw("Error Decoding task",
 						"Data", string(b),
 						"Error", err.Error())
 				} else {
@@ -88,34 +98,12 @@ func (s *Server) TodoList(empty *emptypb.Empty, stream todo.Todo_TodoListServer)
 	}
 }
 
-// marshallAndSend sends the task record to backend
-func marshallAndSend(ctx context.Context, client *kgo.Client, task *todo.Task) (*todo.TodoResponse, error) {
-	tctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-	defer cancel()
-	out, err := proto.Marshal(task)
-	if err != nil {
-		return nil, err
-	}
-	r := &kgo.Record{
-		Key:   []byte(task.Title),
-		Value: out,
-	}
-	if err := client.ProduceSync(tctx, r).FirstErr(); err != nil {
-		return nil, err
-	}
-	return &todo.TodoResponse{
-		Task:      task,
-		Partition: r.Partition,
-		Offset:    r.Offset,
-	}, nil
-}
-
 // poll fetches the record from the backend and adds that the channel
-func poll(client *kgo.Client, ch chan result) {
-	log.Debugln("Started to poll topic")
+func (s *Server) poll(ch chan result) {
+	log.Debugf("Started to poll topic:%s", s.config.DefaultProducerTopic())
 	//Consumer
 	for {
-		fetches := client.PollFetches(context.Background())
+		fetches := s.client.PollFetches(context.Background())
 		if errs := fetches.Errors(); len(errs) > 0 {
 			ch <- result{
 				errors: errs,

@@ -45,7 +45,8 @@ services:
       - 19644:9644
   console:
     container_name: redpanda-console
-    image: docker.redpanda.com/redpandadata/console:v2.3.6
+    #image: docker.redpanda.com/redpandadata/console:v2.3.6
+    image: redpandadata/console-unstable:master-3ac807b
     networks:
       - redpanda_network
     entrypoint: /bin/sh
@@ -58,11 +59,21 @@ services:
           schemaRegistry:
             enabled: true
             urls: ["http://redpanda-0:8081"]
+            username: console
+            password: password
           protobuf:
             enabled: true
             schemaRegistry:
               enabled: true
               refreshInterval: 5m
+            mappings:
+              - topicName: todo-list
+                valueProtoType: todo.Task
+            git:
+              enabled: true
+              refreshInterval: 5m
+              repository:
+                 url: https://github.com/kameshsampath/demo-protos.git
         redpanda:
           adminApi:
             enabled: true
@@ -73,7 +84,7 @@ services:
       - redpanda-0
   todo-app:
     container_name: todo-app-server
-    image: ghcr.io/kameshsampath/grpc-todo-app/server:v0.0.5
+    image: ghcr.io/kameshsampath/grpc-todo-app/server:v0.0.6
     networks:
       - redpanda_network
     environment:
@@ -82,6 +93,7 @@ services:
       - TOPICS=todo-list
       - ENV=dev
       - CONSUMER_GROUP_ID=grpc-todo-app
+      - SCHEMA_REGISTRY=redpanda-0:8081
     ports:
       - 9090:9090
     links:
@@ -90,7 +102,7 @@ services:
       - redpanda-0
   todo-list:
     container_name: todo-list
-    image: ghcr.io/kameshsampath/grpc-todo-app/client:v0.0.5
+    image: ghcr.io/kameshsampath/grpc-todo-app/client:v0.0.6
     networks:
       - redpanda_network
     links:
